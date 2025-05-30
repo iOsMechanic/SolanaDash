@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: whale_bot_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: whale_trading
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - whale_bot_network
+
+  whale_bot:
+    build: .
+    container_name: whale_trading_bot
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://admin:password123@mongodb:27017/whale_trading?authSource=admin
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - whale_bot_network
+
+volumes:
+  mongodb_data:
+
+networks:
+  whale_bot_network:
+    driver: bridge
